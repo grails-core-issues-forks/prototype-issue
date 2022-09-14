@@ -10,10 +10,10 @@ import java.util.List;
 public class RobotController {
 
     private final RobotFather father;
-    private final RobotFather mother;
+    private final RobotMother mother;
 
     public RobotController(RobotFather father,  // <2>
-                           RobotFather mother) {
+                           RobotMother mother) {
         this.father = father;
         this.mother = mother;
     }
