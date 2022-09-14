@@ -1,4 +1,4 @@
-package example.micronaut.request;
+package example.micronaut;
 
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
@@ -19,7 +19,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @MicronautTest // <1>
-class RobotControllerTest {
+class RequestScopeTest {
     @Inject
     @Client("/")
     HttpClient httpClient;
@@ -27,17 +27,15 @@ class RobotControllerTest {
     @Test
     void requestScopeScopeIsACustomScopeThatIndicatesANewInstanceOfTheBeanIsCreatedAndAssociatedWithEachHTTPRequest() {
         BlockingHttpClient client = httpClient.toBlocking();
-        HttpResponse<List<String>> response = client.exchange(createRequest(), Argument.listOf(String.class));
-        assertEquals(HttpStatus.OK, response.status());
-        Set<String> responses = new HashSet<>(response.body());
+        Set<String> responses = new HashSet<>(executeRequest(client));
         assertEquals(1, responses.size());
-
-        response = client.exchange(createRequest(), Argument.listOf(String.class));
-        assertEquals(HttpStatus.OK, response.status());
-        responses.addAll(response.body());
+        responses.addAll(executeRequest(client));
         assertEquals(2, responses.size());
     }
 
+    private List<String> executeRequest(BlockingHttpClient client) {
+        return client.retrieve(createRequest(), Argument.listOf(String.class));
+    }
     private HttpRequest<?> createRequest() {
         return HttpRequest.GET("/request").header("UUID", UUID.randomUUID().toString());
     }

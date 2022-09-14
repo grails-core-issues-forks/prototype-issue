@@ -1,4 +1,4 @@
-package example.micronaut.prototype;
+package example.micronaut;
 
 import io.micronaut.core.type.Argument;
 import io.micronaut.http.HttpRequest;
@@ -19,8 +19,8 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@MicronautTest // <1>
-class RobotControllerTest {
+@MicronautTest
+class PrototypeScopeTest {
     @Inject
     @Client("/")
     HttpClient httpClient;
@@ -29,14 +29,13 @@ class RobotControllerTest {
     @ValueSource(strings = {"/bean", "/prototype"})
     void prototypeScopeIndicatesThatANewInstanceOfTheBeanIsCreatedEachTimeItIsInjected(String path) {
         BlockingHttpClient client = httpClient.toBlocking();
-        HttpResponse<List<String>> response = client.exchange(HttpRequest.GET(path), Argument.listOf(String.class));
-        assertEquals(HttpStatus.OK, response.status());
-        Set<String> responses = new HashSet<>(response.body());
+        Set<String> responses = new HashSet<>(executeRequest(client, path));
         assertEquals(2, responses.size());
+        responses.addAll(executeRequest(client, path));
+        assertEquals(2, responses.size());
+    }
 
-        response = client.exchange(HttpRequest.GET(path), Argument.listOf(String.class));
-        assertEquals(HttpStatus.OK, response.status());
-        responses.addAll(response.body());
-        assertEquals(2, responses.size());
+    private List<String> executeRequest(BlockingHttpClient client, String path) {
+        return client.retrieve(HttpRequest.GET(path), Argument.listOf(String.class));
     }
 }

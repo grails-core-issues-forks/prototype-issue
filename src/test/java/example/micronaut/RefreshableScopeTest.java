@@ -1,4 +1,4 @@
-package example.micronaut.refreshable;
+package example.micronaut;
 
 import io.micronaut.context.annotation.Property;
 import io.micronaut.core.type.Argument;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Property(name = "endpoints.refresh.enabled", value = StringUtils.TRUE)
 @Property(name = "endpoints.refresh.sensitive", value = StringUtils.FALSE)
 @MicronautTest // <1>
-class RobotControllerTest {
+class RefreshableScopeTest {
     @Inject
     @Client("/")
     HttpClient httpClient;
@@ -36,10 +36,13 @@ class RobotControllerTest {
         assertEquals(1, responses.size());
         responses.addAll(executeRequest(client, path));
         assertEquals(1, responses.size());
-        HttpResponse<?> refreshEndpointResponse = client.exchange(HttpRequest.POST("/refresh", Collections.emptyMap()));
-        assertEquals(HttpStatus.OK, refreshEndpointResponse.status());
+        refresh(client);
         responses.addAll(executeRequest(client, path));
         assertEquals(2, responses.size());
+    }
+
+    private void refresh(BlockingHttpClient client) {
+        client.exchange(HttpRequest.POST("/refresh", Collections.emptyMap()));
     }
 
     private List<String> executeRequest(BlockingHttpClient client, String path) {
